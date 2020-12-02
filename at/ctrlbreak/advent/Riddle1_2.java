@@ -1,6 +1,6 @@
 package at.ctrlbreak.advent;
 
-class Riddle1_2 extends Riddle1_1 {
+public class Riddle1_2 extends Riddle1_1 {
     public static void main(String[] args) {
         solve();
     }
