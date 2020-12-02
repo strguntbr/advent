@@ -3,12 +3,13 @@ valid(MIN, MAX, CHAR, [CHAR|OTHER_CHARS]) :- valid(MIN - 1, MAX - 1, CHAR, OTHER
 valid(MIN, MAX, CHAR, [FIRST_CHAR|OTHER_CHARS]) :- not(FIRST_CHAR = CHAR), valid(MIN, MAX, CHAR, OTHER_CHARS).
 validPassword(RULE, PASSWORD) :- string_chars(PASSWORD, CHARS), valid(RULE.min, RULE.max, RULE.char, CHARS).
 
-validData(DATA) :-
-    rawData(DATA),
+parsedData(DATA, rule{min: MIN, max: MAX, char: CHAR}, PASSWORD) :-
     split_string(DATA, ":", " ", [RULE, PASSWORD]),
     split_string(RULE, " ", "", [RANGE, CHAR_STR]), atom_string(CHAR, CHAR_STR),
-    split_string(RANGE, "-", "", [MIN_STR, MAX_STR]), number_string(MIN, MIN_STR), number_string(MAX, MAX_STR),
-    validPassword(rule{min: MIN, max: MAX, char: CHAR}, PASSWORD).
+    split_string(RANGE, "-", "", [MIN_STR, MAX_STR]), number_string(MIN, MIN_STR), number_string(MAX, MAX_STR).
+validData(DATA) :- rawData(DATA), parsedData(DATA, RULE, PASSWORD), validPassword(RULE, PASSWORD).
+
+solve :- aggregate_all(count, validData(_), COUNT), write(COUNT).
 
 rawData("8-9 n: nnnnnnnnn").
 rawData("14-15 d: dzjgbdwdkdhdddh").
@@ -1010,5 +1011,3 @@ rawData("14-18 n: nnnnnxnnnnnnnnnnngnn").
 rawData("1-8 m: vwbpmmsxmvbwsggqgxd").
 rawData("10-11 q: nqqqqgqfqpf").
 rawData("4-15 b: fctbwzqnwbnvqbqlb").
-
-solve :- aggregate_all(count, validData(_), COUNT), write(COUNT).
