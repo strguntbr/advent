@@ -17,6 +17,6 @@ class Riddle2_2 extends Riddle2_1 {
     }
 
     protected static boolean nthCharIs(String password, int n, char c) {
-        return password.length() > n && password.charAt(n) == c;
+        return password.length() > n - 1 && password.charAt(n - 1) == c;
     }
 }

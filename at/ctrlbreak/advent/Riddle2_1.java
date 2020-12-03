@@ -1035,8 +1035,8 @@ public class Riddle2_1 {
         public final String password;
 
         public Data(int min, int max, char c, String password) {
-            this.min = min - 1;
-            this.max = max - 1;
+            this.min = min;
+            this.max = max;
             this.c = c;
             this.password = password;
         }
