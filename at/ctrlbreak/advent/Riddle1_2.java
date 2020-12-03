@@ -2,20 +2,24 @@ package at.ctrlbreak.advent;
 
 public class Riddle1_2 extends Riddle1_1 {
     public static void main(String[] args) {
-        solve();
+        new Riddle1_2();
     }
 
-    protected static void solve() {
-        for (int i = 0; i < numbers.length; i++) {
-            for (int j = i + 1; j < numbers.length; j++) {
+    @Override
+    protected Integer solve() {
+        Integer solution = null;
+        for (int i = 0; i < data.size(); i++) {
+            for (int j = i + 1; j < data.size(); j++) {
                 if (sum(i, j)< 2020) {
-                    for (int k = j + 1; k < numbers.length; k++) {
+                    for (int k = j + 1; k < data.size(); k++) {
                         if (sum(i, j, k)==2020) {
-                            System.out.println(numbers[i] * numbers[j] * numbers[k]);
+                            ensureNoOtherSolutionExists(solution);
+                            solution =data.get(i) * data.get(j) * data.get(k);
                         }
                     }
                 }
             }
         }
+        return ensureSolutionExists(solution);
     }
 }
