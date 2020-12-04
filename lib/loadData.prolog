@@ -12,5 +12,6 @@ stringList_codesList([SH|ST], [CH|CT]) :- string_codes(SH, CH), stringList_codes
 readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), stringList_codesList(LINES, BYTELISTS).
 
 loadData(DATA, FILE) :- readLines(FILE, LINES), data_lines(DATA, LINES).
+loadPreprocessedData(DATA, FILE) :- readLines(FILE, LINES), preprocessLines(LINES, PREPROCESSED_LINES), data_lines(DATA, PREPROCESSED_LINES).
 data_lines([],[]).
 data_lines([FIRST_DATA|OTHER_DATA], [FIRST_LINE|OTHER_LINES]) :- data_line(FIRST_DATA, FIRST_LINE), data_lines(OTHER_DATA, OTHER_LINES).
