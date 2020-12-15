@@ -26,3 +26,8 @@ groupedData_groupedLines([], []).
 groupedData_groupedLines([GROUPED_DATA_H|GROUPED_DATA_T], [GROUPED_LINES_H|GROUPED_LINES_T]) :-
   data_lines(GROUPED_DATA_H, GROUPED_LINES_H),
   groupedData_groupedLines(GROUPED_DATA_T, GROUPED_LINES_T).
+
+/* solve shortcuts */
+solveDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.data', RIDDLE), solve(RIDDLE).
+solveTestDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.test', RIDDLE), solve(RIDDLE).
+solveTestDay(DAY, N) :- string_concat('input/', DAY, A), string_concat(A, '.test', B), string_concat(B, N, RIDDLE), solve(RIDDLE).
