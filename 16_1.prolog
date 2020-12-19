@@ -1,49 +1,44 @@
+errorValue(FieldValue, 0) :- fieldValid(_, FieldValue), !.
+errorValue(FieldValue, FieldValue).
+errorScanningRate([], 0).
+errorScanningRate([H|T], Value) :- errorScanningRate(T, TValue), errorValue(H, HValue), plus(HValue, TValue, Value).
 
-valid(FIELD_VAL, [r{min:MIN, max: MAX}|_]) :- between(MIN, MAX, FIELD_VAL), !.
-valid(FIELD_VAL, [_|RANGES]) :- valid(FIELD_VAL, RANGES).
+nearbyErrorScanningRate(Ticket, Value) :- nearbyTicket(Ticket), errorScanningRate(Ticket, Value).
 
-validField(FIELD_VAL, [def{f: NAME, r: RANGES}|OTHER_DEFINITIONS], NAME, OTHER_DEFINITIONS) :- valid(FIELD_VAL, RANGES).
-validField(FIELD_VAL, [DEFSh|DEFSt], NAME, [DEFSh|OTHER_DEFINITIONS]) :- validField(FIELD_VAL, DEFSt, NAME, OTHER_DEFINITIONS).
-
-sumInvalidFields(ticket{fields: []}, 0, _).
-sumInvalidFields(ticket{fields: [H|T]}, SUM, DEFINITIONS) :- validField(H, DEFINITIONS, _, OTHER_DEFINITIONS), !, sumInvalidFields(ticket{fields: T}, SUM, OTHER_DEFINITIONS).
-sumInvalidFields(ticket{fields: [H|T]}, SUM, DEFINITIONS) :- sumInvalidFields(ticket{fields: T}, SUMt, DEFINITIONS), plus(H, SUMt, SUM).
-
-sumAllInvalidFields([], 0, _).
-sumAllInvalidFields([H|T], SUM, DEFINITIONS) :- sumInvalidFields(H, SUMh, DEFINITIONS), sumAllInvalidFields(T, SUMt, DEFINITIONS), plus(SUMh, SUMt, SUM).
-
-solve(FILE) :-
-  loadFile(FILE, DEFINITIONS, _, NEARBY_TICKETS),
-  sumAllInvalidFields(NEARBY_TICKETS, SUM, DEFINITIONS),
-  write(SUM).
+solve(File) :-
+  loadData(_, File),
+  aggregate_all(sum(ErrorValue), nearbyErrorScanningRate(_, ErrorValue), Sum),
+  write(Sum).
 solveTest :- ['lib/loadData.prolog'], solveTestDay(16).
 solveTest(N) :- ['lib/loadData.prolog'], solveTestDay(16, N).
 solve :- ['lib/loadData.prolog'], solveDay(16).
 
-loadFile(FILE, DEFINITIONS, MY_TICKET, NEARBY_TICKETS) :-
-  loadData(DATA, FILE),
-  definitions(DATA, DEFINITIONS, TICKET_DATA),
-  tickets(TICKET_DATA, [MY_TICKET|NEARBY_TICKETS]).
-
-definitions([[]|T], [], T).
-definitions([def{f: FIELD, r: RANGES}|T], [def{f: FIELD, r: RANGES}|Td], TICKETS) :- definitions(T, Td, TICKETS).
-tickets([], []).
-tickets([[]|T], TICKETS) :- tickets(T, TICKETS).
-tickets([ticket{fields: FIELDS}|T], [ticket{fields: FIELDS}|TICKETS]) :- tickets(T, TICKETS).
-
 /* required for loadData */
-data_line(def{f: FIELD, r: RANGES}, LINE) :-
-  split_string(LINE, ":", " ", [FIELD, RANGE_STR]),
-  split_string(RANGE_STR, "o", "r ", RANGE_STR_LIST),
-  strings_ranges(RANGE_STR_LIST, RANGES).
-data_line(ticket{fields: FIELDS}, LINE) :- split_string(LINE, ",", "", FIELD_STRS), numbers_strings(FIELDS, FIELD_STRS).
-data_line([], "").
-data_line([], "your ticket:").
-data_line([], "nearby tickets:").
+data_line([], "") :- !.
+data_line([], Line) :- parseFieldDefinition(Line).
+data_line([], Line) :- startTicketSegment(Line).
+data_line([], Line) :- startNearbySegment(Line).
+data_line([], Line) :- parseTicket(Line).
 
-strings_ranges([], []).
-strings_ranges([H|T], [Hr|Tr]) :- string_range(H, Hr), strings_ranges(T, Tr).
-string_range(S, r{min:MIN, max: MAX}) :- split_string(S, "-", "", [MIN_STR, MAX_STR]), number_string(MIN, MIN_STR), number_string(MAX, MAX_STR).
+startTicketSegment("your ticket:") :- assertz(inSegment("ticket")).
+startNearbySegment("nearby tickets:") :- assertz(inSegment("nearby")).
 
-numbers_strings([], []).
-numbers_strings([H|T], [Hn|Tn]) :- number_string(H, Hn), numbers_strings(T, Tn).
+parseTicket(Line) :- split_string(Line, ",", "", FieldStrs), numbers_strings(Fields, FieldStrs), createTicket(Fields).
+createTicket(Fields) :- inSegment("nearby"), !, assertz(nearbyTicket(Fields)).
+createTicket(Fields) :- inSegment("ticket"), assertz(myTicket(Fields)).
+
+numbers_strings([] ,[]).
+numbers_strings([Nh|Nt], [Sh|St]) :- number_string(Nh, Sh), numbers_strings(Nt, St).
+
+convert([], []).
+convert([FirstRangeStr|OtherRangeStrs], [range{min: Min, max: Max}|OtherRanges]) :-
+  split_string(FirstRangeStr, "-", "", [MinStr, MaxStr]),
+  number_string(Min, MinStr), number_string(Max, MaxStr),
+  convert(OtherRangeStrs, OtherRanges).
+
+inRange(V, [range{min: Min, max: Max}|_]) :- between(Min, Max, V), !.
+inRange(V, [_|OtherRanges]) :- inRange(V, OtherRanges).
+
+parseFieldDefinition(Line) :-
+  split_string(Line, ":", "", [Name, RawRanges]), split_string(RawRanges, "o", "r ", RangeStrList), convert(RangeStrList, Ranges),
+  assertz(fieldValid(Name, Value) :- inRange(Value, Ranges)).
