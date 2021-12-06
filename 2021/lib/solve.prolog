@@ -31,8 +31,14 @@ groupedData_groupedLines([GROUPED_DATA_H|GROUPED_DATA_T], [GROUPED_LINES_H|GROUP
   data_lines(GROUPED_DATA_H, GROUPED_LINES_H),
   groupedData_groupedLines(GROUPED_DATA_T, GROUPED_LINES_T).
 
+debugOut(NAME, DATA) :- current_predicate(debugOn/0), !, write(NAME), write(": "), write(DATA), write("\n\n").
+debugOut(_, _).
+
 printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, TEST_RESULT), !, loadData(DATA), result(DATA, RESULT), write(RESULT).
-printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, WRONG_RESULT), write('FAIL! Test returned '), write(WRONG_RESULT), write(' instead of '), write(TEST_RESULT).
+printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, WRONG_RESULT), !, write("FAIL! Test returned "), write(WRONG_RESULT), write(" instead of "), write(TEST_RESULT).
+printResult :- loadTestData(TEST_DATA), loadData(DATA), !, debugOut("testData", TEST_DATA), debugOut("data", DATA), write("FAIL! No solution found").
+printResult :- loadTestData(TEST_DATA), !, debugOut("testData", TEST_DATA), write("FAIL! Could not load data").
+printResult :- write("FAIL! Could not load test data").
 
 /* solve shortcuts */
 solveDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.data', RIDDLE), solve(RIDDLE).
