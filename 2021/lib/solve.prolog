@@ -11,7 +11,8 @@ stringList_codesList([], []) :- !.
 stringList_codesList([SH|ST], [CH|CT]) :- string_codes(SH, CH), stringList_codesList(ST, CT).
 readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), stringList_codesList(LINES, BYTELISTS).
 
-loadData(DATA, FILE) :- readLines(FILE, LINES), data_lines(DATA, LINES).
+loadData(DATA, FILE) :- exists_file(FILE), !, readLines(FILE, LINES), data_lines(DATA, LINES).
+loadData([], FILE) :- write("ERROR! File "), write(FILE), write(" does not exists").
 loadData(DATA) :- day(DAY), fileForDay(DAY, '.data', FILE), loadData(DATA, FILE).
 loadTestData(DATA) :- day(DAY), fileForDay(DAY, '.test', FILE), loadData(DATA, FILE).
 
