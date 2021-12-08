@@ -39,11 +39,11 @@ groupedData_groupedLines_([GROUPED_DATA_H|GROUPED_DATA_T], [GROUPED_LINES_H|GROU
 debugOut(NAME, DATA) :- current_predicate(debugOn/0), !, write(NAME), write(": "), write(DATA), write("\n\n").
 debugOut(_, _).
 
-printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, TEST_RESULT), !, loadData(DATA), result(DATA, RESULT), write(RESULT).
-printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), debugOut("testData", TEST_DATA), result(TEST_DATA, WRONG_RESULT), !, write("\nFAIL! Test returned "), write(WRONG_RESULT), write(" instead of "), write(TEST_RESULT).
-printResult :- loadTestData(TEST_DATA), loadData(DATA), !, debugOut("testData", TEST_DATA), debugOut("data", DATA), write("\nFAIL! No solution found").
-printResult :- loadTestData(TEST_DATA), !, debugOut("testData", TEST_DATA), write("\nFAIL! Could not load data").
-printResult :- write("\nFAIL! Could not load test data").
+printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, TEST_RESULT), !, write("[PASSED] "), loadData(DATA), write("Result is "), result(DATA, RESULT), write(RESULT), write("\n").
+printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), debugOut("testData", TEST_DATA), result(TEST_DATA, WRONG_RESULT), !, write("[FAILED] Test returned "), write(WRONG_RESULT), write(" instead of "), write(TEST_RESULT), write("\n").
+printResult :- loadTestData(TEST_DATA), loadData(DATA), !, debugOut("testData", TEST_DATA), debugOut("data", DATA), write("[FAILED] No solution found\n").
+printResult :- loadTestData(TEST_DATA), !, debugOut("testData", TEST_DATA), write("[FAILED] Could not load data\n").
+printResult :- write("[FAILED] Could not load test data\n").
 
 /* solve shortcuts */
 solveDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.data', RIDDLE), solve(RIDDLE).
