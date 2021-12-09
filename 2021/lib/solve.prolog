@@ -14,10 +14,10 @@ readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), stringList_codesList(L
 loadData_(GROUPED_DATA, FILE) :- current_predicate(groupData/0), !, readLines(FILE, LINES), groupLines(LINES, GROUPED_LINES), groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES).
 loadData_(DATA, FILE) :- readLines(FILE, LINES), data_lines(DATA, LINES).
 
-loadData(DATA, FILE) :- exists_file(FILE), !, loadData_(DATA, FILE).
-loadData([], FILE) :- write("\nERROR! File "), write(FILE), write(" does not exists").
-loadData(DATA) :- day(DAY), fileForDay(DAY, '.data', FILE), loadData(DATA, FILE).
-loadTestData(DATA) :- day(DAY), fileForDay(DAY, '.test', FILE), loadData(DATA, FILE).
+loadData(DATA, FILE, []) :- exists_file(FILE), !, loadData_(DATA, FILE).
+loadData([], FILE, ERROR) :- format(string(ERROR), "File ~w does not exist", [FILE]).
+loadData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.data', FILE), loadData(DATA, FILE, ERROR).
+loadTestData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.test', FILE), loadData(DATA, FILE, ERROR).
 
 fileForDay(DAY, EXT, FILE) :- string_concat('input/', DAY, A), string_concat(A, EXT, FILE).
 
@@ -36,16 +36,23 @@ groupedData_groupedLines_([GROUPED_DATA_H|GROUPED_DATA_T], [GROUPED_LINES_H|GROU
   data_lines(GROUPED_DATA_H, GROUPED_LINES_H),
   groupedData_groupedLines_(GROUPED_DATA_T, GROUPED_LINES_T).
 
-debugOut(NAME, DATA) :- current_predicate(debugOn/0), !, write(NAME), write(": "), write(DATA), write("\n\n").
-debugOut(_, _).
+printResult :- current_predicate(skipTest/0), !, write("[TEST SKIPPED] "), printResultWithoutTest.
+printResult :- verifyTest, printResultWithoutTest.
 
-printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), result(TEST_DATA, TEST_RESULT), !, write("[PASSED] "), loadData(DATA), write("Result is "), result(DATA, RESULT), write(RESULT), write("\n").
-printResult :- testResult(TEST_RESULT), loadTestData(TEST_DATA), debugOut("testData", TEST_DATA), result(TEST_DATA, WRONG_RESULT), !, write("[FAILED] Test returned "), write(WRONG_RESULT), write(" instead of "), write(TEST_RESULT), write("\n").
-printResult :- loadTestData(TEST_DATA), loadData(DATA), !, debugOut("testData", TEST_DATA), debugOut("data", DATA), write("[FAILED] No solution found\n").
-printResult :- loadTestData(TEST_DATA), !, debugOut("testData", TEST_DATA), write("[FAILED] Could not load data\n").
-printResult :- write("[FAILED] Could not load test data\n").
+printResultWithoutTest :- getData(DATA), execute(DATA).
+getData(DATA) :- loadData(DATA, ERROR), !, checkLoadError(ERROR).
+getData(_) :- writeln("Error: Could not load riddle data"), halt(5).
+checkLoadError([]) :- !.
+checkLoadError(ERROR) :- loadData(_, ERROR), !, format("Error: ~w~n", [ERROR]), halt(6).
+execute(DATA) :- result(DATA, RESULT), !, format("Result is ~w~n", [RESULT]).
+execute(_) :- writeln("Error: could find result for riddle data"), halt(7).
 
-/* solve shortcuts */
-solveDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.data', RIDDLE), solve(RIDDLE).
-solveTestDay(DAY) :- string_concat('input/', DAY, A), string_concat(A, '.test', RIDDLE), solve(RIDDLE).
-solveTestDay(DAY, N) :- string_concat('input/', DAY, A), string_concat(A, '.test', B), string_concat(B, N, RIDDLE), solve(RIDDLE).
+verifyTest :- getTestData(TEST_DATA), executeTest(TEST_DATA).
+getTestData(TEST_DATA) :- loadTestData(TEST_DATA, ERROR), !, checkTestLoadError(ERROR).
+getTestData(_) :- writeln("[TEST  FAILED] Could not load test data"), halt(1).
+checkTestLoadError([]) :- !.
+checkTestLoadError(ERROR) :- format("[TEST  FAILED] ~w~n", [ERROR]), halt(2).
+executeTest(TEST_DATA) :- result(TEST_DATA, TEST_RESULT), !, verifyResult(TEST_RESULT).
+executeTest(_) :- writeln("[TEST  FAILED] No solution for test data found"), halt(3).
+verifyResult(TEST_RESULT) :- testResult(TEST_RESULT), !, write("[TEST  PASSED] ").
+verifyResult(WRONG_RESULT) :- testResult(TEST_RESULT), format("[TEST  FAILED] Test returned ~w instead of ~w~n", [WRONG_RESULT, TEST_RESULT]), halt(4).
