@@ -1,7 +1,6 @@
 distance(POS, TARGET, DISTANCE) :- POS < TARGET, !, DISTANCE is TARGET - POS.
 distance(POS, TARGET, DISTANCE) :- DISTANCE is POS - TARGET.
-distance_fuel(0, 0) :- !.
-distance_fuel(D, F) :- Dn is D - 1, distance_fuel(Dn, Fn), F is Fn + D.
+distance_fuel(D, F) :- F is (1 + D) * D / 2.
 requiredFuel([], _, 0).
 requiredFuel([FIRST_POS|OTHER_POSES], TARGET, FUEL) :-
   requiredFuel(OTHER_POSES, TARGET, OTHER_FUEL),
