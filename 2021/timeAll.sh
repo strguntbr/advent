@@ -23,6 +23,6 @@ function printRiddle {
 }
 
 exec 5>&1
-for riddle in *.prolog; do
+for riddle in $1*.prolog; do
   printRiddle $riddle
 done
