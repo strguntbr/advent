@@ -24,6 +24,6 @@ function printRiddle {
   fi
 }
 
-for riddle in $(ls $1*.prolog | sort -V); do
+for riddle in $(ls $1*.prolog | grep -v debug | sort -V); do
   printRiddle $riddle
 done
