@@ -17,10 +17,12 @@ function printRiddle {
   printf "%11s: " $riddle
   if prolog -q -l $riddle -t "['lib/solve.prolog'],verifyTest"; then
     startTime=$(date +%s%0N)
-    RESULT=$(prolog -q -l $riddle -t "['lib/solve.prolog'],printResultWithoutTest")
+    prolog -q -l $riddle -t "['lib/solve.prolog'],printResultWithoutTest"
     endTime=$(date +%s%0N)
     duration=$(( ($endTime-$startTime)/1000000 ))
     echo "$RESULT ($(displaytime $duration))"
+  else
+    echo
   fi
 }
 

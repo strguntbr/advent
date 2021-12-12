@@ -9,15 +9,17 @@ flashingOctopus(X, Y) :- octopus(X, Y, E), E > 9.
 steps(0, 0) :- !.
 steps(C, FLASHES) :- Cn is C - 1, steps(Cn, FLASHESn), incrementAll(FLASHEScur), FLASHES is FLASHESn + FLASHEScur.
 
+setOctopus(X, Y, E) :- retractall(octopus(X, Y, _)), assert(octopus(X, Y, E)), printOneOctopus(X, Y).
+
 incrementAll(FLASHES) :-
   octopuses(OCTOPUSES),
   maplist(increment, OCTOPUSES, FLASH_LIST),
   sumlist(FLASH_LIST, FLASHES),
   resetFlashes.
 increment([X, Y], FLASHES) :- octopus(X, Y, E), E == 9, !,
-  retractall(octopus(X, Y, _)), assert(octopus(X, Y, 10)),
+  setOctopus(X, Y, 10),
   incrementNeighbors(X, Y, FLASHESn), FLASHES is FLASHESn + 1.
-increment([X, Y], 0) :- octopus(X, Y, E), En is E + 1, retractall(octopus(X, Y, _)), assert(octopus(X, Y, En)).
+increment([X, Y], 0) :- octopus(X, Y, E), En is E + 1, setOctopus(X, Y, En).
 incrementNeighbors(X, Y, FLASHES) :- 
   findall([Xn, Yn], neighboringOctopus(X, Y, Xn, Yn), OCTOPUSES),
   maplist(increment, OCTOPUSES, FLASH_LIST),
@@ -26,24 +28,19 @@ incrementNeighbors(X, Y, FLASHES) :-
 resetFlashes :- flashingOctopus(X, Y), !, retractall(octopus(X, Y, _)), assert(octopus(X, Y, 0)), resetFlashes.
 resetFlashes.
 
-printOctopuses :-
-  aggregate_all(min(X), octopus(X, Y, _), Xmin), aggregate_all(max(X), octopus(X, Y, _), Xmax),
-  forall(between(Xmin, Xmax, Xc), printOctopuses(Xc)).
-printOctopuses(X) :-
-  aggregate_all(min(Y), octopus(_, Y, _), Ymin), aggregate_all(max(Y), octopus(_, Y, _), Ymax),
-  forall(between(Ymin, Ymax, Yc), printOctopus(X, Yc)), writeln("").
-printOctopus(X, Y) :- octopus(X, Y, E), E > 9, !, write("X").
-printOctopus(X, Y) :- octopus(X, Y, E), write(E).
-
 result(ENERGY_LEVEL_MATRIX, FLASHES) :-
+  cursorPosition(POS),
   initOctopuses(ENERGY_LEVEL_MATRIX),
-  steps(100, FLASHES).
+  steps(100, FLASHES),
+  RIGHT is POS - 1, moveCursor(1, 'up'), moveCursor(RIGHT, 'right').
 
 day(11). testResult(1656). solve :- ['lib/solve.prolog'], printResult.
 
 initOctopuses(ENERGY_LEVEL_MATRIX) :-
   retractall(octopus(_, _, _)), initOctopuses(ENERGY_LEVEL_MATRIX, 0),
-  findall([X, Y], octopus(X, Y, _), OCTOPUSES), retractall(octopuses(_)), assert(octopuses(OCTOPUSES)).
+  findall([X, Y], octopus(X, Y, _), OCTOPUSES), retractall(octopuses(_)), assert(octopuses(OCTOPUSES)),
+  length(OCTOPUSES, OCTOPUS_COUNT), retractall(octopusCount(_)), assert(octopusCount(OCTOPUS_COUNT)),
+  printOctopuses.
 initOctopuses([], _).
 initOctopuses([H|T], X) :- initOctopuses(H, X, 0), Xn is X + 1, initOctopuses(T, Xn).
 initOctopuses([], _, _).
@@ -51,3 +48,25 @@ initOctopuses([H|T], X, Y) :- assert(octopus(X, Y, H)), Yn is Y + 1, initOctopus
 
 /* required for loadData */
 data_line(ENERGY_LEVELS, LINE) :- string_chars(LINE, TMP), maplist(atom_number, TMP, ENERGY_LEVELS).
+
+/* output */
+printOctopuses :- isAnsiXterm, !, writeln(""),
+  aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
+  forall(between(0, Xmax, Xc), printOctopuses(Xc)), moveCursor(Xmax + 1, 'up'), moveCursor(Ymax + 1, 'left').
+printOctopuses.
+printOctopuses(X) :- isAnsiXterm, !,
+  aggregate_all(max(Y), octopus(_, Y, _), Ymax),
+  forall(between(0, Ymax, Yc), printOctopus(X, Yc)), writeln("").
+printOctopuses(_).
+printOctopus(X, Y) :- isAnsiXterm, !, octopus(X, Y, E), energy_string(E, E_STR), write(E_STR).
+printOctopus(_, _).
+printOneOctopus(X, Y) :- isAnsiXterm, !,
+  octopus(X, Y, E), energy_string(E, E_STR),
+  moveCursor(Y, 'right'), moveCursor(X, 'down'), 
+  format('~w\033[1D', [E_STR]),
+  moveCursor(Y, 'left'), moveCursor(X, 'up').
+printOneOctopus(_, _).
+energy_string(E, S) :- (
+  E > 9 -> S = "\033[1;37m0\033[0m"
+  ; S = E
+).
