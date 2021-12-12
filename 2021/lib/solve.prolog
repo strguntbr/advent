@@ -12,8 +12,8 @@ stringList_codesList([], []) :- !.
 stringList_codesList([SH|ST], [CH|CT]) :- string_codes(SH, CH), stringList_codesList(ST, CT).
 readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), stringList_codesList(LINES, BYTELISTS).
 
-loadData_(GROUPED_DATA, FILE) :- current_predicate(groupData/0), !, readLines(FILE, LINES), groupLines(LINES, GROUPED_LINES), groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES).
-loadData_(DATA, FILE) :- readLines(FILE, LINES), data_lines(DATA, LINES).
+loadData_(GROUPED_DATA, FILE) :- current_predicate(groupData/0), !, tryResetData, readLines(FILE, LINES), groupLines(LINES, GROUPED_LINES), groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES).
+loadData_(DATA, FILE) :- tryResetData, readLines(FILE, LINES), data_lines(DATA, LINES).
 
 loadData(DATA, FILE, []) :- exists_file(FILE), !, loadData_(DATA, FILE).
 loadData([], FILE, ERROR) :- format(string(ERROR), "File ~w does not exist", [FILE]).
@@ -21,6 +21,9 @@ loadData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.data', FILE), loadData(DATA
 loadTestData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.test', FILE), loadData(DATA, FILE, ERROR).
 
 fileForDay(DAY, EXT, FILE) :- string_concat('input/', DAY, A), string_concat(A, EXT, FILE).
+
+tryResetData :- current_predicate(resetData/0), !, resetData.
+tryResetData.
 
 data_lines([], []).
 data_lines([FIRST_DATA|OTHER_DATA], [FIRST_LINE|OTHER_LINES]) :- data_line(FIRST_DATA, FIRST_LINE), data_lines(OTHER_DATA, OTHER_LINES).
