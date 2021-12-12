@@ -7,26 +7,20 @@ eos([], []).
 byteLine([])                        --> ( "\n" ; call(eos) ), !.
 byteLine([FIRST_BYTE|OTHER_BYTES])  --> [FIRST_BYTE], byteLine(OTHER_BYTES).
 readByteLines(FILE, BYTELISTS) :- phrase_from_file(byteLines(BYTELISTS), FILE).
+readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), maplist(string_codes, LINES, BYTELISTS).
 
-stringList_codesList([], []) :- !.
-stringList_codesList([SH|ST], [CH|CT]) :- string_codes(SH, CH), stringList_codesList(ST, CT).
-readLines(FILE, LINES) :- readByteLines(FILE, BYTELISTS), stringList_codesList(LINES, BYTELISTS).
-
-loadData_(GROUPED_DATA, FILE) :- current_predicate(groupData/0), !, tryResetData, readLines(FILE, LINES), groupLines(LINES, GROUPED_LINES), groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES).
-loadData_(DATA, FILE) :- tryResetData, readLines(FILE, LINES), data_lines(DATA, LINES).
+loadData_(GROUPED_DATA, FILE) :- current_predicate(groupData/0), !, p_resetData, readLines(FILE, LINES), groupLines(LINES, GROUPED_LINES), groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES).
+loadData_(DATA, FILE) :- p_resetData, readLines(FILE, LINES), data_lines(DATA, LINES).
 
 loadData(DATA, FILE, []) :- exists_file(FILE), !, loadData_(DATA, FILE).
 loadData([], FILE, ERROR) :- format(string(ERROR), "File ~w does not exist", [FILE]).
-loadData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.data', FILE), loadData(DATA, FILE, ERROR).
-loadTestData(DATA, ERROR) :- day(DAY), fileForDay(DAY, '.test', FILE), loadData(DATA, FILE, ERROR).
+loadTestData(DATA) :- p_day(DAY), fileForDay(DAY, 'test', FILE), loadData(DATA, FILE, ERROR), (
+    ERROR \= [] -> writeln(ERROR), fail
+  ).
 
-fileForDay(DAY, EXT, FILE) :- string_concat('input/', DAY, A), string_concat(A, EXT, FILE).
+fileForDay(DAY, EXT, FILE) :- format(atom(FILE), 'input/~w.~w', [DAY, EXT]).
 
-tryResetData :- current_predicate(resetData/0), !, resetData.
-tryResetData.
-
-data_lines([], []).
-data_lines([FIRST_DATA|OTHER_DATA], [FIRST_LINE|OTHER_LINES]) :- data_line(FIRST_DATA, FIRST_LINE), data_lines(OTHER_DATA, OTHER_LINES).
+data_lines(DATA, LINES) :- maplist(p_data_line, DATA, LINES).
 
 groupLines([""], [[]]) :- !.
 groupLines([LINE1], [[LINE1]]) :- !.
@@ -35,31 +29,34 @@ groupLines([LINE1|OTHER_LINES], [[LINE1|GROUPED_OTHER_LINES_HEAD]|GROUPED_OTHER_
 
 groupedData_groupedLines([HEADER_DATA|GROUPED_DATA], [[HEADER_LINE]|GROUPED_LINES]) :- current_predicate(data_header/2), !, data_header(HEADER_DATA, HEADER_LINE), groupedData_groupedLines_(GROUPED_DATA, GROUPED_LINES).
 groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES) :- groupedData_groupedLines_(GROUPED_DATA, GROUPED_LINES).
-groupedData_groupedLines_([], []).
-groupedData_groupedLines_([GROUPED_DATA_H|GROUPED_DATA_T], [GROUPED_LINES_H|GROUPED_LINES_T]) :-
-  data_lines(GROUPED_DATA_H, GROUPED_LINES_H),
-  groupedData_groupedLines_(GROUPED_DATA_T, GROUPED_LINES_T).
+groupedData_groupedLines_(GROUPED_DATA, GROUPED_LINES) :- maplist(data_lines, GROUPED_DATA, GROUPED_LINES).
 
-printResult :- verifyTest, printResultWithoutTest.
-
+printResult :- verifyTests, printResultWithoutTest.
 printResultWithoutTest :- getData(DATA), execute(DATA).
-getData(DATA) :- loadData(DATA, ERROR), !, checkLoadError(ERROR).
+
+getData(DATA) :- p_day(DAY), fileForDay(DAY, 'data', FILE), loadData(DATA, FILE, ERROR), !, checkLoadError(ERROR).
 getData(_) :- writeln("Error: Could not load riddle data"), halt(5).
 checkLoadError([]) :- !.
-checkLoadError(ERROR) :- loadData(_, ERROR), !, format("Error: ~w", [ERROR]), halt(6).
-execute(DATA) :- result(DATA, RESULT), !, format("Result is ~w", [RESULT]).
+checkLoadError(ERROR) :- format("Error: ~w", [ERROR]), halt(6).
+execute(DATA) :- p_result(DATA, RESULT), !, format("Result is ~w", [RESULT]).
 execute(_) :- writeln("Error: could find result for riddle data"), halt(7).
 
-verifyTest :- current_predicate(skipTest/0), !, testSkipped(STATUS), format('[~w] ', [STATUS]).
-verifyTest :- getTestData(TEST_DATA), executeTest(TEST_DATA).
-getTestData(TEST_DATA) :- loadTestData(TEST_DATA, ERROR), !, checkTestLoadError(ERROR).
-getTestData(_) :- testFailed(STATUS), format('[~w] Could not load test data', [STATUS]), halt(1).
+testResult_(FILE, EXPECTED_RESULT) :- p_testResult(EXPECTED_RESULT), p_day(DAY), fileForDay(DAY, 'test', FILE).
+testResult_(FILE, EXPECTED_RESULT) :- p_testResult(EXTENSION, EXPECTED_RESULT), p_day(DAY), format(atom(FILE), 'input/~w.~w', [DAY, EXTENSION]).
+findTests(TESTS) :- findall([FILE, EXPECTED_RESULT], testResult_(FILE, EXPECTED_RESULT), TESTS).
+
+verifyTests :- current_predicate(skipTest/0), !, testSkipped(STATUS), format('[~w] ', [STATUS]).
+verifyTests :- forall(testResult_(FILE, EXPECTED_RESULT), verifyTest(FILE, EXPECTED_RESULT)), testPassed(STATUS), format('[~w] ', [STATUS]).
+
+verifyTest(FILE, EXPECTED_RESULT) :- getTestData(FILE, TEST_DATA), executeTest(FILE, TEST_DATA, EXPECTED_RESULT).
+getTestData(FILE, TEST_DATA) :- loadData(TEST_DATA, FILE, ERROR), !, checkTestLoadError(ERROR).
+getTestData(FILE, _) :- testFailed(STATUS), format('[~w] Could not load test data ~w', [STATUS, FILE]), halt(1).
 checkTestLoadError([]) :- !.
 checkTestLoadError(ERROR) :- testFailed(STATUS), format("[~w] ~w", [STATUS, ERROR]), halt(2).
-executeTest(TEST_DATA) :- result(TEST_DATA, TEST_RESULT), !, verifyResult(TEST_RESULT).
-executeTest(_) :- testFailed(STATUS), format('[~w] No solution for test data found', [STATUS]), halt(3).
-verifyResult(TEST_RESULT) :- testResult(TEST_RESULT), !,testPassed(STATUS), format('[~w] ', [STATUS]).
-verifyResult(WRONG_RESULT) :- testResult(TEST_RESULT), testFailed(STATUS), format("[~w] Test returned ~w instead of ~w", [STATUS, WRONG_RESULT, TEST_RESULT]), halt(4).
+executeTest(FILE, TEST_DATA, EXPECTED_RESULT) :- p_result(TEST_DATA, TEST_RESULT), !, verifyResult(FILE, TEST_RESULT, EXPECTED_RESULT).
+executeTest(FILE, _, _) :- testFailed(STATUS), format('[~w] No solution for test data ~w found', [STATUS, FILE]), halt(3).
+verifyResult(_, TEST_RESULT, TEST_RESULT) :- !.
+verifyResult(FILE, WRONG_RESULT, EXPECTED_RESULT) :- testFailed(STATUS), format("[~w] Test ~w returned ~w instead of ~w", [STATUS, FILE, WRONG_RESULT, EXPECTED_RESULT]), halt(4).
 
 testPassed(TEXT) :- green("TEST  PASSED", TEXT).
 testFailed(TEXT) :- red("TEST  FAILED", TEXT).
@@ -108,3 +105,11 @@ csi(TARGET, SEQUENCE) :- isAnsiXterm, !, format(TARGET, '\033~w', [SEQUENCE]).
 csi(TARGET, _) :- format(TARGET, '', []).
 
 isAnsiXterm :- stream_property(current_output, tty(true)), current_prolog_flag(color_term, true).
+
+/* proxies for methods defined outside this  file */
+p_day(DAY) :- day(DAY).
+p_resetData :- current_predicate(resetData/0) -> resetData ; true.
+p_data_line(DATA, LINE) :- data_line(DATA, LINE).
+p_result(DATA, RESULT) :- result(DATA, RESULT).
+p_testResult(EXPECTED_RESULT) :- current_predicate(testResult/1), testResult(EXPECTED_RESULT).
+p_testResult(EXTENSION, EXPECTED_RESULT) :- current_predicate(testResult/2), testResult(EXTENSION, EXPECTED_RESULT).

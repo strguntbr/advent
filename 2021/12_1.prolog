@@ -1,3 +1,6 @@
+day(12). testResult('test1', 10). testResult('test2', 19). testResult('test3', 226).
+solve :- ['lib/solve.prolog'], printResult.
+
 member([H|T], H, T).
 member([H|T], M, [H|MT]) :- member(T, M, MT).
 
@@ -19,8 +22,6 @@ result(_, PATH_COUNT) :-
   findall(CAVE, cave(CAVE), ALL_CAVES),
   pickCave(ALL_CAVES, "start", CAVES),
   aggregate_all(count, findPath(CAVES, _), PATH_COUNT).
-
-day(12). testResult(10). solve :- ['lib/solve.prolog'], printResult.
 
 /* required for loadData */
 data_line([START, END], LINE) :-

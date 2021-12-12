@@ -15,7 +15,7 @@ function displaytime {
 function printRiddle {
   riddle=$1
   printf "%11s: " $riddle
-  if prolog -q -l $riddle -t "['lib/solve.prolog'],verifyTest"; then
+  if prolog -q -l $riddle -t "['lib/solve.prolog'],verifyTests"; then
     startTime=$(date +%s%0N)
     prolog -q -l $riddle -t "['lib/solve.prolog'],printResultWithoutTest"
     endTime=$(date +%s%0N)
