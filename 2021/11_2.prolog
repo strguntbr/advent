@@ -33,6 +33,7 @@ result(ENERGY_LEVEL_MATRIX, STEPS) :-
   cursorPosition(POS),
   initOctopuses(ENERGY_LEVEL_MATRIX),
   steps(STEPS),
+  clearOctopuses,
   RIGHT is POS - 1, moveCursor(1, 'up'), moveCursor(RIGHT, 'right').
 
 day(11). testResult(195). solve :- ['lib/solve.prolog'], printResult.
@@ -61,6 +62,11 @@ printOctopuses(X) :- isAnsiXterm, !,
 printOctopuses(_).
 printOctopus(X, Y) :- isAnsiXterm, !, octopus(X, Y, E), energy_string(E, E_STR), write(E_STR).
 printOctopus(_, _).
+clearOctopuses :- isAnsiXterm, !,
+  aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
+  forall(between(0, Xmax, _), clearOctopusesLine(Ymax)),
+  moveCursor(Xmax, 'up'), moveCursor(Ymax, 'left'), moveCursor(1, 'up').
+clearOctopusesLine(LEN) :- forall(between(0, LEN, _), write(" ")), writeln("").
 printOneOctopus(X, Y) :- isAnsiXterm, !,
   octopus(X, Y, E), energy_string(E, E_STR),
   moveCursor(Y, 'right'), moveCursor(X, 'down'), 

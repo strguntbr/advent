@@ -38,7 +38,7 @@ getData(DATA) :- p_day(DAY), fileForDay(DAY, 'data', FILE), loadData(DATA, FILE,
 getData(_) :- writeln("Error: Could not load riddle data"), halt(5).
 checkLoadError([]) :- !.
 checkLoadError(ERROR) :- format("Error: ~w", [ERROR]), halt(6).
-execute(DATA) :- p_result(DATA, RESULT), !, format("Result is ~w", [RESULT]).
+execute(DATA) :- p_result(DATA, RESULT), !, format("Result is ~w", [RESULT]), p_finalize.
 execute(_) :- writeln("Error: could find result for riddle data"), halt(7).
 
 testResult_(FILE, EXPECTED_RESULT) :- p_testResult(EXPECTED_RESULT), p_day(DAY), fileForDay(DAY, 'test', FILE).
@@ -113,3 +113,4 @@ p_data_line(DATA, LINE) :- data_line(DATA, LINE).
 p_result(DATA, RESULT) :- result(DATA, RESULT).
 p_testResult(EXPECTED_RESULT) :- current_predicate(testResult/1), testResult(EXPECTED_RESULT).
 p_testResult(EXTENSION, EXPECTED_RESULT) :- current_predicate(testResult/2), testResult(EXTENSION, EXPECTED_RESULT).
+p_finalize :- current_predicate(finalize/0) -> finalize ; true.
