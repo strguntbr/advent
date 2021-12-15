@@ -1,8 +1,6 @@
-member([H|T], H, T).
-member([H|T], M, [H|MT]) :- member(T, M, MT).
+day(8). testResult(61229). solve :- ['lib/solve.prolog'], printResult.
 
-otherDigits(DIGIT, OTHERS) :- member([0,1,2,3,4,5,6,7,8,9], DIGIT, OTHERS).
-differentDigit(DIGIT, OTHER) :- digit(OTHER, _), OTHER \= DIGIT.
+result(Data, Sum) :- initExpectedWireCounts, aggregate_all(sum(V), (getDisplayValue(Data, V)), Sum).
 
 digit(0, ['a', 'b', 'c', 'e', 'f', 'g']).
 digit(1, ['c', 'f']).
@@ -15,43 +13,41 @@ digit(7, ['a', 'c', 'f']).
 digit(8, ['a', 'b', 'c', 'd', 'e', 'f', 'g']).
 digit(9, ['a', 'b', 'c', 'd', 'f', 'g']).
 
-segmentEnabledForDigit(WIRE, DIGIT) :- digit(DIGIT, WIRES), member(WIRE, WIRES).
-expectedWireCount(SEGMENT, COUNT) :- aggregate_all(count, segmentEnabledForDigit(SEGMENT, _), COUNT).
+initExpectedWireCounts :- retractall(expectedWireCount(_, _)), digit(8, Segments), forall(member(Segment, Segments), initExpectedWireCount(Segment)).
+initExpectedWireCount(Segment) :- aggregate_all(count, segmentEnabledForDigit(Segment, _), Count), assert(expectedWireCount(Segment, Count)).
+segmentEnabledForDigit(Wire, Digit) :- digit(Digit, Wires), member(Wire, Wires).
 
-patternWithWire(PATTERN, WIRE) :- patterns(PATTERNS), member(PATTERN, PATTERNS), member(WIRE, PATTERN).
-countWire(WIRE, COUNT) :- aggregate_all(count, patternWithWire(_, WIRE), COUNT).
+member([H|T], H, T).
+member([H|T], M, [H|MT]) :- member(T, M, MT).
 
-wiringPossible(WIRE, SEGMENT) :- countWire(WIRE, C), expectedWireCount(SEGMENT, C).
-
-wiringsPossible(WIRES, SEGMENTS) :- length(WIRES, LENGTH), length(SEGMENTS, LENGTH), wiringsPossible_(WIRES, SEGMENTS).
+wiringPossible(Wire, Segment) :- wireCount(Wire, C), expectedWireCount(Segment, C).
+wiringsPossible(Wires, Segments) :- length(Wires, Length), length(Segments, Length), wiringsPossible_(Wires, Segments).
 wiringsPossible_([], _) :- !.
-wiringsPossible_(WIRES, SEGMENTS) :-
-  member(WIRES, WIRE, OTHER_WIRES), member(SEGMENTS, SEGMENT, OTHER_SEGMENTS),
-  wiringPossible(WIRE, SEGMENT), wiringsPossible_(OTHER_WIRES, OTHER_SEGMENTS), !.
+wiringsPossible_(Wires, Segments) :-
+  member(Wires, Wire, OtherWires), member(Segments, Segment, OtherSegments),
+  wiringPossible(Wire, Segment), wiringsPossible_(OtherWires, OtherSegments), !.
 
-canBeDigit(DIGIT, WIRES) :- digit(DIGIT, ENABLED_SEGMENTS), wiringsPossible(WIRES, ENABLED_SEGMENTS).
-isDigit(DIGIT, WIRES) :- canBeDigit(DIGIT, WIRES),
-  forall(differentDigit(DIGIT, OTHER_DIGIT), not(canBeDigit(OTHER_DIGIT, WIRES))), !.
+canBeDigit(Digit, Wires) :- digit(Digit, EnabledSegments), wiringsPossible(Wires, EnabledSegments).
+isDigit(Digit, Wires) :- canBeDigit(Digit, Wires), forall((digit(OtherDigit, _), OtherDigit \= Digit), not(canBeDigit(OtherDigit, Wires))), !.
 
 displayValue([], 0).
-displayValue([H|T], VALUE) :- isDigit(DIGIT, H), displayValue(T, VALUE_T), VALUE is VALUE_T * 10 + DIGIT.
+displayValue([H|T], Value) :- isDigit(Digit, H), displayValue(T, ValueT), Value is ValueT * 10 + Digit.
 
-displayValue(PATTERNS, DISPLAY, VALUE) :- retractall(patterns(_)), assert(patterns(PATTERNS)), reverse(DISPLAY, REV_DISPLAY), displayValue(REV_DISPLAY, VALUE).
+displayValue(Patterns, Display, Value) :- initWireCounts(Patterns), reverse(Display, RevDisplay), displayValue(RevDisplay, Value).
 
-sumDisplayValues([], 0).
-sumDisplayValues([H|T], SUM) :- displayValue(H.patterns, H.display, VALUE), sumDisplayValues(T, SUMt), SUM is SUMt + VALUE.
+initWireCounts(Patterns) :- digit(8, Wires), forall(member(Wire, Wires), initWireCount(Wire, Patterns)).
+initWireCount(Wire, Patterns) :-
+  aggregate_all(count, (member(Pattern, Patterns), member(Wire, Pattern)), Count),
+  retractall(wireCount(Wire, _)), assert(wireCount(Wire, Count)).
 
-result(DATA, SUM) :- sumDisplayValues(DATA, SUM).
-
-day(8). testResult(61229). solve :- ['lib/solve.prolog'], printResult.
+getDisplayValue(Data, Value) :- member(H, Data), displayValue(H.patterns, H.display, Value).
 
 /* required for loadData */
-data_line(data{patterns: ALL, display: DISPLAY}, LINE) :-  
-  split_string(LINE, "|", " ", [ALL_STR, DISPLAY_STR]),
-  string_patterns(ALL_STR, ALL),
-  string_patterns(DISPLAY_STR, DISPLAY).
+data_line(data{patterns: All, display: Display}, Line) :-  
+  split_string(Line, "|", " ", [AllStr, DisplayStr]),
+  string_patterns(AllStr, All),
+  string_patterns(DisplayStr, Display).
 
-string_patterns(STRING, PATTERNS) :-
-  split_string(STRING, " ", "", STRINGS),
-  maplist(string_wires, STRINGS, PATTERNS).
-string_wires(STRING, PATTERN) :- string_chars(STRING, PATTERN).
+string_patterns(String, Patterns) :-
+  split_string(String, " ", "", Strings),
+  maplist(string_chars, Strings, Patterns).
