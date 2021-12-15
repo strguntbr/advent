@@ -16,6 +16,7 @@ loadData(DATA, FILE, []) :- exists_file(FILE), !, loadData_(DATA, FILE).
 loadData([], FILE, ERROR) :- format(string(ERROR), "File ~w does not exist", [FILE]).
 loadTestData(DATA) :- p_day(DAY), fileForDay(DAY, 'test', FILE), loadData(DATA, FILE, ERROR), (
     ERROR \= [] -> writeln(ERROR), fail
+    ; true
   ).
 
 fileForDay(DAY, EXT, FILE) :- format(atom(FILE), 'input/~w.~w', [DAY, EXT]).
