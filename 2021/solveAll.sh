@@ -12,12 +12,12 @@ function displaytime {
   (( $H == 0 && $M == 0 && $S == 0 )) && printf '%dms\n' $MS
 }
 
-function printRiddle {
-  riddle=$1
-  printf "%11s: " $riddle
-  if prolog -q -l $riddle -t "['lib/solve.prolog'],verifyTests"; then
+function printPuzzle {
+  puzzle=$1
+  printf "%11s: " $puzzle
+  if prolog -q -l $puzzle -t "['lib/solve.prolog'],verifyTests"; then
     startTime=$(date +%s%0N)
-    prolog -q -l $riddle -t "['lib/solve.prolog'],printResultWithoutTest"
+    prolog -q -l $puzzle -t "['lib/solve.prolog'],printResultWithoutTest"
     endTime=$(date +%s%0N)
     duration=$(( ($endTime-$startTime)/1000000 ))
     echo "$RESULT ($(displaytime $duration))"
@@ -26,6 +26,6 @@ function printRiddle {
   fi
 }
 
-for riddle in $(ls $1*.prolog | grep -v debug | sort -V); do
-  printRiddle $riddle
+for puzzle in $(ls $1*.prolog | grep -v debug | grep -v common | sort -V); do
+  printPuzzle $puzzle
 done

@@ -36,7 +36,7 @@ printResult :- verifyTests, printResultWithoutTest.
 printResultWithoutTest :- getData(DATA), execute(DATA).
 
 getData(DATA) :- p_day(DAY), fileForDay(DAY, 'data', FILE), loadData(DATA, FILE, ERROR), !, checkLoadError(ERROR).
-getData(_) :- writeln("Error: Could not load riddle data"), halt(5).
+getData(_) :- writeln("Error: Could not load puzzle data"), halt(5).
 checkLoadError([]) :- !.
 checkLoadError(ERROR) :- format("Error: ~w", [ERROR]), halt(6).
 execute(DATA) :- p_result(DATA, RESULT), !, format("Result is ~w", [RESULT]), p_finalize.
