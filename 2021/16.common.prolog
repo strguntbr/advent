@@ -14,11 +14,11 @@ parseContent(Version, 4, Bits, Result, RemainingBits) :- !,
 parseContent(Version, Type, [0|Bits], Result, RemainingBits) :-
   length(LengthField, 15), append(LengthField, BitsWoLengthField, Bits), binary_value(LengthField, Length),
   length(SubPacketBits, Length), append(SubPacketBits, RemainingBits, BitsWoLengthField),
-  parsePackets(SubPacketBits, SubPackets, []),
+  indent(1), parsePackets(SubPacketBits, SubPackets, []), indent(-1),
   eval(Version, Type, SubPackets, Result).
 parseContent(Version, Type, [1|Bits], Result, RemainingBits) :-
   length(LengthField, 11), append(LengthField, SubPacketBits, Bits), binary_value(LengthField, Length),
-  length(SubPackets, Length), parsePackets(SubPacketBits, SubPackets, RemainingBits),
+  length(SubPackets, Length), indent(1), parsePackets(SubPacketBits, SubPackets, RemainingBits), indent(-1),
   eval(Version, Type, SubPackets, Result).
 
 parseLiteral([0, B3, B2, B1, B0 | RemainingBits], [B3, B2, B1, B0], RemainingBits).
@@ -26,6 +26,8 @@ parseLiteral([1, B3, B2, B1, B0 | NextBits], [B3, B2, B1, B0 | NextLiteral], Rem
 
 parsePackets(Bits, [Result|NextResults], RemainingBits) :- parsePacket(Bits, Result, NextBits), parsePackets(NextBits, NextResults, RemainingBits), !.
 parsePackets(RemainingBits, [], RemainingBits).
+
+indent(X) :- (current_predicate(indentation/1) -> indentation(I) ; I = 0), retractall(indentation(_)), INext is I + 2 * X, assert(indentation(INext)).
 
 /* required for loadData */
 data_line(Bits, Line) :- string_chars(Line, Hex), maplist(hexchar_binary, Hex, Binary), append(Binary, Bits).
