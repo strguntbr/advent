@@ -1,6 +1,6 @@
-day(16).
+:- include('lib/solve.prolog'). day(16).
 
-solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/binary.prolog').
 
 result([Bits], Result) :- parsePacket(Bits, Result, _).
 
@@ -29,5 +29,3 @@ parsePackets(RemainingBits, [], RemainingBits).
 
 /* required for loadData */
 data_line(Bits, Line) :- string_chars(Line, Hex), maplist(hexchar_binary, Hex, Binary), append(Binary, Bits).
-
-:- include('lib/binary.prolog').

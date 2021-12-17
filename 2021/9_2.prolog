@@ -1,3 +1,5 @@
+:- include('lib/solve.prolog'). day(9). testResult(1134).
+
 adjacentNumbers(A, Aadj) :- Aadj is A + 1.
 adjacentNumbers(A, Aadj) :- Aadj is A - 1.
 
@@ -39,8 +41,6 @@ sizeProduct([[Hx,Hy]|T], P) :- basinSize(Hx, Hy, S), sizeProduct(T, Pn), P is S*
 
 result(HEIGHTMAP, RESULT) :- initFacts(HEIGHTMAP), calcBasins([]),
   findall([X,Y], topNLargestBasin(X, Y, 3), TOP_BASINS), sizeProduct(TOP_BASINS, RESULT).
-
-day(9). testResult(1134). solve :- ['lib/solve.prolog'], printResult.
 
 initFacts(HEIGHTMAP) :- retractall(height(_,_,_)), retractall(inBasin(_, _, _, _)), assert(inBasin(X, Y, X, Y)), initFacts(HEIGHTMAP, 0).
 initFacts([], _).

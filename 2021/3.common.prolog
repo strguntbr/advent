@@ -1,4 +1,4 @@
-day(3). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(3).
 
 :- include('lib/matrix.prolog').
 :- include('lib/binary.prolog').

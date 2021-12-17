@@ -1,4 +1,4 @@
-day(1). testResult(7). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(1). testResult(7).
 
 result(Report, Increases) :- aggregate_all(count, (append(_, [First,Second|_], Report), Second > First), Increases).
 

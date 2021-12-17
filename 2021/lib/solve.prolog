@@ -32,6 +32,8 @@ groupedData_groupedLines([HEADER_DATA|GROUPED_DATA], [[HEADER_LINE]|GROUPED_LINE
 groupedData_groupedLines(GROUPED_DATA, GROUPED_LINES) :- groupedData_groupedLines_(GROUPED_DATA, GROUPED_LINES).
 groupedData_groupedLines_(GROUPED_DATA, GROUPED_LINES) :- maplist(data_lines, GROUPED_DATA, GROUPED_LINES).
 
+solve :- printResult.
+
 printResult :- verifyTests, printResultWithoutTest.
 printResultWithoutTest :- getData(DATA), execute(DATA).
 

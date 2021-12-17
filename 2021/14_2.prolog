@@ -1,4 +1,4 @@
-day(14). testResult(2188189693529). groupData. solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(14). testResult(2188189693529). groupData.
 
 result([[Template], Rules], Result) :-
   transformTemplate(Template, Pairs, Last), applyRulesMultipleTimes(Rules, Pairs, 40, AppliedPairs),

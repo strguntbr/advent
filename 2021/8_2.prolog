@@ -1,4 +1,4 @@
-day(8). testResult(61229). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(8). testResult(61229).
 
 result(Data, Sum) :- initExpectedWireCounts, aggregate_all(sum(V), (getDisplayValue(Data, V)), Sum).
 

@@ -1,5 +1,4 @@
-day(12). testResult('test1', 10). testResult('test2', 19). testResult('test3', 226).
-solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(12). testResult('test1', 10). testResult('test2', 19). testResult('test3', 226).
 
 member([H|T], H, T).
 member([H|T], M, [H|MT]) :- member(T, M, MT).

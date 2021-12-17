@@ -1,4 +1,4 @@
-day(15). testResult(315). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(15). testResult(315).
 
 result(RiskMap, Risk) :-
   mapSize(RiskMap, SX, SY), initFacts(RiskMap, SX, SY),

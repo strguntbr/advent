@@ -1,4 +1,4 @@
-day(2). testResult(150). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(2). testResult(150).
 
 result(Course, Result) :- pos(Course, [Horizontal, Depth]), Result is Horizontal*Depth.
 

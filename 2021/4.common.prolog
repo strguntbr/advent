@@ -1,4 +1,4 @@
-day(4). groupData. solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(4). groupData.
 
 :- include('lib/matrix.prolog').
 

@@ -1,4 +1,4 @@
-day(13). testResult(16). groupData. solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(13). testResult(16). groupData.
 
 result([InitialDots, Instructions], DotCount) :- fold(InitialDots, Instructions, FoldedDots), length(FoldedDots, DotCount), assertDots(FoldedDots).
 

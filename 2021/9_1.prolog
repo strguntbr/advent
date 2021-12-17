@@ -1,3 +1,5 @@
+:- include('lib/solve.prolog'). day(9). testResult(15).
+
 adjacentNumbers(A, Aadj) :- Aadj is A + 1.
 adjacentNumbers(A, Aadj) :- Aadj is A - 1.
 
@@ -14,8 +16,6 @@ lowPointRisk(X, Y, R) :- lowPoint(X, Y, HEIGHT), R is 1 + HEIGHT.
 
 result(HEIGHTMAP, RISK_SUM) :- initFacts(HEIGHTMAP),
   aggregate_all(sum(RISK), lowPointRisk(_, _, RISK), RISK_SUM).
-
-day(9). testResult(15). solve :- ['lib/solve.prolog'], printResult.
 
 initFacts(HEIGHTMAP) :- retractall(height(_,_,_)), initFacts(HEIGHTMAP, 0).
 initFacts([], _).

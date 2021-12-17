@@ -1,3 +1,5 @@
+:- include('lib/solve.prolog'). day(10). testResult(288957).
+
 matches('(', ')'). matches('[', ']'). matches('{', '}'). matches('<', '>').
 score(')', 1). score(']', 2). score('}', 3). score('>', 4).
 
@@ -15,8 +17,6 @@ median(LIST, MEDIAN) :- sort(LIST, SORTED), length(LIST, LENGTH), N is (LENGTH -
 result(NAVIGATION_DATA, MEDIAN_SCORE) :-
   convlist(autocompleteScore, NAVIGATION_DATA, SCORES),
   median(SCORES, MEDIAN_SCORE).
-
-day(10). testResult(288957). solve :- ['lib/solve.prolog'], printResult.
 
 /* required for loadData */
 data_line(NAV_INSTRUCTION, LINE) :- string_chars(LINE, NAV_INSTRUCTION).

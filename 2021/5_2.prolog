@@ -1,3 +1,7 @@
+:- include('lib/solve.prolog'). day(5). testResult(12).
+
+result(VENTS, SCORE) :- retractall(ventAt(_, _)), retractall(dangerAt(_, _)), processVents(VENTS),  aggregate_all(count, dangerAt(_, _), SCORE).
+
 horizontal(line{start: pos{x: X, y: _}, end: pos{x: X, y: _}}).
 vertical(line{start: pos{x: _, y: Y}, end: pos{x: _, y: Y}}).
 diagonal(LINE, 1, 1) :- DX is LINE.end.x - LINE.start.x, DY is LINE.end.y - LINE.start.y, DX = DY, DX > 0.
@@ -25,10 +29,6 @@ processVent(L) :- write(L).
 
 processVents([]).
 processVents([H|T]) :- processVent(H), processVents(T).
-
-result(VENTS, SCORE) :- retractall(ventAt(_, _)), retractall(dangerAt(_, _)), processVents(VENTS),  aggregate_all(count, dangerAt(_, _), SCORE).
-
-day(5). testResult(12). solve :- ['lib/solve.prolog'], printResult.
 
 /* required for loadData */
 data_line(line{start: START_COORDS, end: END_COORDS}, LINE) :-

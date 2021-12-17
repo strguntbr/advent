@@ -1,4 +1,4 @@
-day(7). testResult(37). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(7). testResult(37).
 
 result([Crabs], MinimumFuel) :- aggregate_all(min(FuelSum), totalRequiredFuel(Crabs, FuelSum), MinimumFuel).
 

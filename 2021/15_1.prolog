@@ -1,4 +1,4 @@
-day(15). testResult(40). solve :- ['lib/solve.prolog'], printResult.
+:- include('lib/solve.prolog'). day(15). testResult(40).
 
 result(RiskMap, Risk) :-
   initFacts(RiskMap), assert(pathTo([0, 0], 0)),

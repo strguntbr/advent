@@ -15,9 +15,9 @@ function displaytime {
 function printPuzzle {
   puzzle=$1
   printf "%11s: " $puzzle
-  if prolog -q -l $puzzle -t "['lib/solve.prolog'],verifyTests"; then
+  if prolog -q -l $puzzle -t "verifyTests"; then
     startTime=$(date +%s%0N)
-    prolog -q -l $puzzle -t "['lib/solve.prolog'],printResultWithoutTest"
+    prolog -q -l $puzzle -t "printResultWithoutTest"
     endTime=$(date +%s%0N)
     duration=$(( ($endTime-$startTime)/1000000 ))
     echo "$RESULT ($(displaytime $duration))"

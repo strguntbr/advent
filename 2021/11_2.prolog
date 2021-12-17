@@ -1,3 +1,5 @@
+:- include('lib/solve.prolog'). day(11). testResult(195).
+
 neighbors(X, Y, Xn, Yn) :- 
   Xmin is X - 1, Xmax is X + 1, Ymin is Y - 1, Ymax is Y + 1,
   between(Xmin, Xmax, Xn), between(Ymin, Ymax, Yn),
@@ -35,8 +37,6 @@ result(ENERGY_LEVEL_MATRIX, STEPS) :-
   steps(STEPS),
   clearOctopuses,
   RIGHT is POS - 1, moveCursor(1, 'up'), moveCursor(RIGHT, 'right').
-
-day(11). testResult(195). solve :- ['lib/solve.prolog'], printResult.
 
 initOctopuses(ENERGY_LEVEL_MATRIX) :-
   retractall(octopus(_, _, _)), initOctopuses(ENERGY_LEVEL_MATRIX, 0),

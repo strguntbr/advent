@@ -1,3 +1,5 @@
+:- include('lib/solve.prolog'). day(6). testResult(26984457539).
+
 grow(FISHES, 0, FISHES) :- !.
 grow(FISHES, C, [AGE1, AGE2, AGE3, AGE4, AGE5, AGE6, AGE6n, AGE8, AGE0]) :-
   Cn is C - 1, grow(FISHES, Cn, [AGE0, AGE1, AGE2, AGE3, AGE4, AGE5, AGE6, AGE7, AGE8]),
@@ -7,8 +9,6 @@ sum([], 0).
 sum([H|T], S) :- sum(T, Sn), S is H + Sn.
 
 result([FISHES], COUNT) :- grow(FISHES, 256, RESULT), sum(RESULT, COUNT).
-
-day(6). testResult(26984457539). solve :- ['lib/solve.prolog'], printResult.
 
 /* required for loadData */
 data_line([AGE0, AGE1, AGE2, AGE3, AGE4, AGE5, AGE6, AGE7, AGE8], LINE) :-
