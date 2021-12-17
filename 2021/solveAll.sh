@@ -14,7 +14,7 @@ function displaytime {
 
 function printPuzzle {
   puzzle=$1
-  printf "%11s: " $puzzle
+  printf "%12s: " $puzzle
   if prolog -q -l $puzzle -t "verifyTests"; then
     startTime=$(date +%s%0N)
     prolog -q -l $puzzle -t "printResultWithoutTest"
