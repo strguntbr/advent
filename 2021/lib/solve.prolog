@@ -49,7 +49,7 @@ testResult_(FILE, EXPECTED_RESULT) :- p_testResult(EXTENSION, EXPECTED_RESULT), 
 findTests(TESTS) :- findall([FILE, EXPECTED_RESULT], testResult_(FILE, EXPECTED_RESULT), TESTS).
 
 verifyTests :- current_predicate(skipTest/0), !, testSkipped(STATUS), format('[~w] ', [STATUS]).
-verifyTests :- forall(testResult_(FILE, EXPECTED_RESULT), verifyTest(FILE, EXPECTED_RESULT)), testPassed(STATUS), format('[~w] ', [STATUS]).
+verifyTests :- p_initDynamicTests, forall(testResult_(FILE, EXPECTED_RESULT), verifyTest(FILE, EXPECTED_RESULT)), testPassed(STATUS), format('[~w] ', [STATUS]).
 
 verifyTest(FILE, EXPECTED_RESULT) :- getTestData(FILE, TEST_DATA), executeTest(FILE, TEST_DATA, EXPECTED_RESULT).
 getTestData(FILE, TEST_DATA) :- loadData(TEST_DATA, FILE, ERROR), !, checkTestLoadError(ERROR).
@@ -117,3 +117,4 @@ p_result(DATA, RESULT) :- result(DATA, RESULT).
 p_testResult(EXPECTED_RESULT) :- current_predicate(testResult/1), testResult(EXPECTED_RESULT).
 p_testResult(EXTENSION, EXPECTED_RESULT) :- current_predicate(testResult/2), testResult(EXTENSION, EXPECTED_RESULT).
 p_finalize :- current_predicate(finalize/0) -> finalize ; true.
+p_initDynamicTests :- current_predicate(initDynamicTests/0) -> initDynamicTests ; true.
