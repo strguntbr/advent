@@ -26,6 +26,14 @@ function printPuzzle {
   fi
 }
 
-for puzzle in $(ls $1*.prolog | grep -v debug | grep -v common | sort -V); do
+function listPuzzles {
+  if [ -z "$1" ]; then
+    ls $1*.prolog | grep -v debug | grep -v common | grep -v \'
+  else
+    ls $1*.prolog | grep -v debug | grep -v common
+  fi
+}
+
+for puzzle in $(listPuzzles "$1" | sort -V); do
   printPuzzle $puzzle
 done
