@@ -39,14 +39,14 @@ groupedData_groupedLines_(GroupedData, GroupedLines) :- maplist(data_lines, Grou
 solve :- printResult.
 
 printResult :- verifyTests, printResultWithoutTest.
-printResultWithoutTest :- getData(Data), execute(Data).
+printResultWithoutTest :- getData(Data), executePuzzle(Data).
 
 getData(Data) :- p_day(Day), fileForDay(Day, 'data', File), loadData(Data, File, Error), !, checkLoadError(Error).
 getData(_) :- writeln('Error: Could not load puzzle data'), halt(5).
 checkLoadError([]) :- !.
 checkLoadError(Error) :- format('Error: ~w', [Error]), halt(6).
-execute(Data) :- p_result(Data, Result), !, white(Result, FormattedResult), format('Result is ~w', [FormattedResult]), p_finalize(Result).
-execute(_) :- writeln('Error: could find result for riddle data'), halt(7).
+executePuzzle(Data) :- p_result(Data, Result), !, white(Result, FormattedResult), format('Result is ~w', [FormattedResult]), p_finalize(Result).
+executePuzzle(_) :- writeln('Error: could find result for puzzle data'), halt(7).
 
 testResult_(File, ExpectedResult) :- p_testResult(ExpectedResult), p_day(Day), fileForDay(Day, 'test', File).
 testResult_(File, ExpectedResult) :- p_testResult(Extension, ExpectedResult), p_day(Day), format(atom(File), 'input/~w.~w', [Day, Extension]).
