@@ -51,27 +51,27 @@ initOctopuses([H|T], X, Y) :- assert(octopus(X, Y, H)), Yn is Y + 1, initOctopus
 data_line(ENERGY_LEVELS, LINE) :- string_chars(LINE, TMP), maplist(atom_number, TMP, ENERGY_LEVELS).
 
 /* output */
-printOctopuses :- isAnsiXterm, !, writeln(""),
-  aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
-  forall(between(0, Xmax, Xc), printOctopuses(Xc)), moveCursor(Xmax + 1, 'up'), moveCursor(Ymax + 1, 'left').
-printOctopuses.
-printOctopuses(X) :- isAnsiXterm, !,
+printOctopuses :- isAnsiXterm -> (
+    writeln(""),
+    aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
+    forall(between(0, Xmax, Xc), printOctopuses(Xc)), moveCursor(Xmax + 1, 'up'), moveCursor(Ymax + 1, 'left')
+  ) ; true.
+printOctopuses(X) :-
   aggregate_all(max(Y), octopus(_, Y, _), Ymax),
   forall(between(0, Ymax, Yc), printOctopus(X, Yc)), writeln("").
-printOctopuses(_).
-printOctopus(X, Y) :- isAnsiXterm, !, octopus(X, Y, E), energy_string(E, E_STR), write(E_STR).
-printOctopus(_, _).
-clearOctopuses :- isAnsiXterm, !,
-  aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
-  forall(between(0, Xmax, _), clearOctopusesLine(Ymax)),
-  moveCursor(Xmax, 'up'), moveCursor(Ymax, 'left'), moveCursor(1, 'up').
+printOctopus(X, Y) :- octopus(X, Y, E), energy_string(E, E_STR), write(E_STR).
+clearOctopuses :- isAnsiXterm -> (
+    aggregate_all(max(X), octopus(X, _, _), Xmax), aggregate_all(max(Y), octopus(Xmax, Y, _), Ymax),
+    forall(between(0, Xmax, _), clearOctopusesLine(Ymax)),
+    moveCursor(Xmax, 'up'), moveCursor(Ymax, 'left'), moveCursor(1, 'up')
+  ) ; true.
 clearOctopusesLine(LEN) :- forall(between(0, LEN, _), write(" ")), writeln("").
-printOneOctopus(X, Y) :- isAnsiXterm, !,
-  octopus(X, Y, E), energy_string(E, E_STR),
-  moveCursor(Y, 'right'), moveCursor(X, 'down'), 
-  format('~w\033[1D', [E_STR]),
-  moveCursor(Y, 'left'), moveCursor(X, 'up').
-printOneOctopus(_, _).
+printOneOctopus(X, Y) :- isAnsiXterm -> (
+    octopus(X, Y, E), energy_string(E, E_STR),
+    moveCursor(Y, 'right'), moveCursor(X, 'down'), 
+    format('~w\033[1D', [E_STR]),
+    moveCursor(Y, 'left'), moveCursor(X, 'up')
+  ) ; true.
 energy_string(E, S) :- (
   E > 9 -> S = "\033[1;37m0\033[0m"
   ; S = E

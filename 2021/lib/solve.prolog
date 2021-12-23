@@ -45,7 +45,7 @@ getData(Data) :- p_day(Day), fileForDay(Day, 'data', File), loadData(Data, File,
 getData(_) :- writeln('Error: Could not load puzzle data'), halt(5).
 checkLoadError([]) :- !.
 checkLoadError(Error) :- format('Error: ~w', [Error]), halt(6).
-executePuzzle(Data) :- p_result(Data, Result), !, white(Result, FormattedResult), format('Result is ~w', [FormattedResult]), p_finalize(Result).
+executePuzzle(Data) :- p_result(Data, Result), !, (p_hideResult -> FormattedResult = "" ; white(Result, FormattedResult)), format('Result is ~w', [FormattedResult]), p_finalize(Result).
 executePuzzle(_) :- writeln('Error: could find result for puzzle data'), halt(7).
 
 testResult_(File, ExpectedResult) :- p_testResult(ExpectedResult), p_day(Day), fileForDay(Day, 'test', File).
@@ -121,3 +121,4 @@ p_testResult(ExpectedResult) :- current_predicate(testResult/1), testResult(Expe
 p_testResult(Extension, ExpectedResult) :- current_predicate(testResult/2), testResult(Extension, ExpectedResult).
 p_finalize(Result) :- current_predicate(finalize/1) -> finalize(Result) ; true.
 p_initDynamicTests :- current_predicate(initDynamicTests/0) -> initDynamicTests ; true.
+p_hideResult :- current_predicate(hideResult/0).

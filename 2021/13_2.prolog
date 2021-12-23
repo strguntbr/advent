@@ -1,4 +1,4 @@
-:- include('lib/solve.prolog'). day(13). testResult(16). groupData.
+:- include('lib/solve.prolog'). day(13). testResult(16). groupData. hideResult.
 
 result([InitialDots, Instructions], DotCount) :- fold(InitialDots, Instructions, FoldedDots), length(FoldedDots, DotCount), assertDots(FoldedDots).
 
@@ -34,6 +34,40 @@ picSize(X, Y) :- dots(Dots), picSize(Dots, X, Y).
 picSize([], 0, 0).
 picSize([Dot1|OtherDots], X, Y) :- picSize(OtherDots, XO, YO), X is max(Dot1.x, XO), Y is max(Dot1.y, YO).
 
-finalize(Result) :-
-    format(atom(T), '~w', Result), string_length(T, L), moveCursor(L, 'left'), forall(between(1, L, _), write(" ")),
-    dots(Dots), print(Dots), picSize(X, Y), write("\r"), Down is Y + 1, moveCursor(Down, 'down'), Right is X + 1, moveCursor(Right, 'right').
+finalize(_) :-
+/*    format(atom(T), '~w', Result), string_length(T, L), moveCursor(L, 'left'), forall(between(1, L, _), write(" ")),*/
+/*    dots(Dots), print(Dots), picSize(X, Y), write("\r"), Down is Y + 1, moveCursor(Down, 'down'), Right is X + 1, moveCursor(Right, 'right').*/
+    dots(Dots), printDots(Dots).
+
+/*dots_strings(Dots, Strings) :- dots_strings(Dots, 0, Strings).
+dots_strings([], _, []).
+dots_strings(Dots, Y, [String|NextStrings]) :- 
+  partition([Dot]>>(Dot.y=Y), Dots, DotsForLine, OtherDots),
+  dots_line(DotsForLine, String),
+  NextY is Y+1,
+  dots_strings(OtherDots, NextY, NextStrings).
+dots_line*/
+
+printDots(Dots) :-
+  dots_lines(Dots, Lines),
+  foreach(member(Line, Lines), printLine(Line)).
+printLine(Line) :-  writeln(""), foreach(member(Char, Line), write(Char)).
+  
+
+dots_lines([], []).
+dots_lines([Dot|OtherDots], Lines) :-
+  dots_lines(OtherDots, OtherLines),
+  addDotToLines(Dot, OtherLines, Lines).
+addDotToLines(dot{x:X, y:Y}, Lines, LinesWithDot) :- addDotToLines(X, Y, Lines, LinesWithDot).
+addDotToLines(X, 0, [FirstLine|OtherLines], [FirstLineWithDot|OtherLines]) :- !,
+  addDotToLine(X, FirstLine, FirstLineWithDot).
+addDotToLines(X, Y, [], LinesWithDot) :- !, addDotToLines(X, Y, [[]], LinesWithDot).
+addDotToLines(X, Y, [FirstLine|OtherLines], [FirstLine|OtherLinesWithDot]) :-
+  YNext is Y-1,
+  addDotToLines(X, YNext, OtherLines, OtherLinesWithDot).
+addDotToLine(0, [_|OtherChars], [X|OtherChars]) :- !, white('X', X).
+addDotToLine(X, [], Line) :- !,
+  addDotToLine(X, [' '], Line).
+addDotToLine(X, [FirstChar|OtherChars], [FirstChar|OtherCharsWithDot]) :-
+  XNext is X -1,
+  addDotToLine(XNext, OtherChars, OtherCharsWithDot).

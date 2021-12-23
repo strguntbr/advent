@@ -9,7 +9,7 @@ setCurMinimum(M) :- retractall(getCurMinimum(_)), assert(getCurMinimum(M)).
 
 play(burrow{rA: A, rB: B, rC: C, rD: D, h1: [], h2: [], h3: [], h4: [], h5: [], h6: [], h7: []}, Energy, Energy) :-
   canMoveIn(A, 'A'), canMoveIn(B, 'B'), canMoveIn(C, 'C'), canMoveIn(D, 'D'),
-  cursorPosition(Pos), format(" ~w~n", [Energy]), Right is Pos - 1, moveCursor(1, 'up'), moveCursor(Right, 'right'), flush_output, 
+  (isAnsiXterm -> cursorPosition(Pos), format(" ~w~n", [Energy]), Right is Pos - 1, moveCursor(1, 'up'), moveCursor(Right, 'right'), flush_output ; true),
   setCurMinimum(Energy).
 play(Burrow, Energy, EnergyResult) :-
   move(Burrow, BurrowForHoming, EnergyForMove), homeAll(BurrowForHoming, NextBurrow, HomingEnergy),
